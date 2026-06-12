@@ -1,0 +1,20 @@
+# skill-doctor configuration (optional). All keys have sensible defaults.
+
+# Globs (relative to a scan root, or matched against name/abs path) to skip.
+ignore = [
+  "tests/**",
+  "**/.skill-doctor.bak/**",
+  "**/node_modules/**",
+]
+
+[rules]
+# Rule ids to disable entirely, e.g. ["SK011", "MT001"].
+disable = []
+
+[score]
+# Points deducted per finding severity (documented, not magic).
+error = 15
+warn = 5
+info = 1
+# Library metadata budget in characters (~1% of the model context window).
+budget_chars = 15500

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Skill Maintainer's Codex — Build to Ship</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Newsreader:ital,opsz@0,6..72;1,6..72&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0e0c08;
+    --paper:#f3ead7;
+    --paper-2:#ece0c8;
+    --amber:#c9621d;
+    --amber-deep:#9c3f12;
+    --gold:#caa24a;
+    --gold-deep:#8a6d20;
+    --teal:#2c6e63;
+    --wine:#9a3f63;
+    --wine-deep:#73304a;
+    --indigo:#43618c;
+    --indigo-deep:#314a6e;
+    --line:rgba(14,12,8,.16);
+    --line-strong:rgba(14,12,8,.34);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Newsreader",serif;
+    font-size:18px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(201,98,29,.10), transparent 38%),
+      radial-gradient(circle at 88% 18%, rgba(44,110,99,.08), transparent 40%);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .mono{font-family:"JetBrains Mono",monospace}
+
+  /* reading progress */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--amber),var(--gold));z-index:600}
+
+  header{max-width:1180px;margin:0 auto;padding:54px 40px 0}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;
+    font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .topbar .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:8px;vertical-align:middle}
+  .hero{padding:60px 0 40px;position:relative;border-bottom:2px solid var(--ink)}
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--amber-deep);margin-bottom:24px;
+  }
+  h1{
+    font-family:"Fraunces",serif;font-weight:900;font-size:clamp(48px,9vw,128px);
+    line-height:.92;letter-spacing:-.02em;font-optical-sizing:auto;
+  }
+  h1 em{font-style:italic;font-weight:500;color:var(--amber)}
+  .lede{max-width:660px;margin-top:32px;font-size:clamp(19px,2.2vw,24px);line-height:1.5;color:rgba(14,12,8,.82)}
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:32px;margin-top:38px;
+    font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(14,12,8,.6);
+  }
+  .meta-row b{color:var(--ink);font-weight:700}
+  .hero-num{
+    position:absolute;top:40px;right:-10px;font-family:"Fraunces",serif;font-weight:900;
+    font-size:clamp(120px,22vw,300px);color:transparent;-webkit-text-stroke:2px var(--line-strong);
+    line-height:.8;pointer-events:none;user-select:none;z-index:-1;opacity:.5;
+  }
+
+  /* ===== roadmap ===== */
+  .roadmap{max-width:1180px;margin:0 auto;padding:52px 40px 0}
+  .rm-head{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+  .rm-kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--amber-deep)}
+  .rm-lead{font-size:18px;color:rgba(14,12,8,.72)}
+  .map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:14px}
+  .mapcard{position:relative;display:flex;flex-direction:column;gap:9px;text-decoration:none;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:10px;padding:24px 20px 22px;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease}
+  .mapcard::before{content:"";position:absolute;top:0;left:0;right:0;height:4px}
+  .mapcard:hover{transform:translateY(-5px);box-shadow:6px 8px 0 rgba(14,12,8,.14)}
+  .mapcard .pn{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(14,12,8,.55)}
+  .mapcard .pt{font-family:"Fraunces",serif;font-weight:900;font-size:27px;line-height:1}
+  .mapcard .pd{font-size:14.5px;line-height:1.42;color:rgba(14,12,8,.72)}
+  .mapcard.c1::before{background:var(--amber)} .mapcard.c1 .pt{color:var(--amber-deep)}
+  .mapcard.c2::before{background:var(--indigo)} .mapcard.c2 .pt{color:var(--indigo-deep)}
+  .mapcard.c3::before{background:var(--gold)} .mapcard.c3 .pt{color:var(--gold-deep)}
+  .mapcard.c4::before{background:var(--teal)} .mapcard.c4 .pt{color:var(--teal)}
+  .mapcard.c5::before{background:var(--wine)} .mapcard.c5 .pt{color:var(--wine-deep)}
+  .rm-appendix{display:inline-block;margin-top:18px;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.05em;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);padding-bottom:2px;transition:color .2s ease}
+  .rm-appendix:hover{color:var(--amber-deep)}
+
+  /* ===== part header ===== */
+  .part{max-width:1180px;margin:0 auto;padding:70px 40px 8px}
+  .part-tag{
+    display:inline-block;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;padding:7px 14px;border-radius:2px;margin-bottom:22px;
+  }
+  .part-tag.official{background:var(--ink);color:var(--paper)}
+  .part-tag.adv{background:rgba(67,97,140,.13);color:var(--indigo-deep);border:1px solid var(--indigo)}
+  .part-tag.setup{background:rgba(202,162,74,.16);color:var(--gold-deep);border:1px solid var(--gold)}
+  .part-tag.field{background:rgba(44,110,99,.12);color:var(--teal);border:1px solid var(--teal)}
+  .part-tag.dist{background:rgba(154,63,99,.13);color:var(--wine-deep);border:1px solid var(--wine)}
+  .part-tag.tpl{background:var(--ink);color:var(--gold)}
+  .part h2.part-title{
+    font-family:"Fraunces",serif;font-weight:900;font-size:clamp(34px,5.5vw,68px);line-height:.98;letter-spacing:-.02em;
+  }
+  .part .sub{max-width:680px;margin-top:18px;color:rgba(14,12,8,.78);font-size:19px}
+  .part .src{
+    margin-top:18px;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.04em;color:rgba(14,12,8,.55);
+  }
+  .part .src a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(44,110,99,.4)}
+  .disclaimer{
+    max-width:680px;margin-top:22px;padding:16px 20px;border-left:3px solid var(--amber);
+    background:rgba(201,98,29,.07);font-style:italic;font-size:16px;color:rgba(14,12,8,.82);
+  }
+
+  /* ===== entries ===== */
+  main{max-width:1180px;margin:0 auto;padding:0 40px}
+  .entry{
+    display:grid;grid-template-columns:120px 1fr;gap:40px;
+    padding:46px 0;border-bottom:1px solid var(--line);position:relative;
+  }
+  .entry .idx{font-family:"Fraunces",serif;font-weight:900;font-size:60px;line-height:1;position:sticky;top:30px;align-self:start}
+  .entry .idx span{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:500;letter-spacing:.18em;color:var(--amber-deep);margin-top:10px}
+  .entry h3{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(26px,3.4vw,38px);line-height:1.05;letter-spacing:-.01em;margin-bottom:16px}
+  .entry h3 .key{color:var(--amber)}
+  .entry p{max-width:680px;color:rgba(14,12,8,.85)}
+  .entry p + p{margin-top:14px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .tag{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;padding:5px 11px;border:1px solid var(--line-strong);border-radius:2px;text-transform:uppercase;color:rgba(14,12,8,.7)}
+  .tag.hot{border-color:var(--amber);color:var(--amber-deep);background:rgba(201,98,29,.07)}
+  .callout{margin-top:20px;padding:15px 20px;border-left:3px solid var(--teal);background:rgba(44,110,99,.07);font-style:italic;font-size:16px;color:rgba(14,12,8,.8)}
+  .callout b{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:4px}
+  pre{margin-top:18px;background:var(--ink);color:var(--paper);border-radius:6px;padding:17px 20px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.7;box-shadow:6px 6px 0 rgba(14,12,8,.18)}
+  pre .c{color:var(--gold)} pre .g{color:#7fa89c} pre .a{color:#e08a4e}
+  pre .h{color:#e8d9b0;font-weight:700} pre .ck{color:#9ad0c4}
+  .entry:hover .idx{color:var(--amber);transition:color .3s ease}
+  .entry{opacity:0;transform:translateY(28px)}
+  .entry.in{opacity:1;transform:none;transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1)}
+
+  /* per-section accent */
+  .adv-sec .entry .idx span{color:var(--indigo-deep)} .adv-sec .entry h3 .key{color:var(--indigo)}
+  .adv-sec .tag.hot{border-color:var(--indigo);color:var(--indigo-deep);background:rgba(67,97,140,.08)}
+  .adv-sec .entry:hover .idx{color:var(--indigo)} .adv-sec .callout{border-left-color:var(--indigo)} .adv-sec .callout b{color:var(--indigo-deep)}
+  .setup-sec .entry .idx span{color:var(--gold-deep)} .setup-sec .entry h3 .key{color:var(--gold-deep)}
+  .setup-sec .tag.hot{border-color:var(--gold);color:var(--gold-deep);background:rgba(202,162,74,.1)}
+  .setup-sec .entry:hover .idx{color:var(--gold)}
+  .field-sec .entry .idx span{color:var(--teal)} .field-sec .entry h3 .key{color:var(--teal)}
+  .field-sec .tag.hot{border-color:var(--teal);color:var(--teal);background:rgba(44,110,99,.07)}
+  .field-sec .entry:hover .idx{color:var(--teal)}
+  .dist-sec .entry .idx span{color:var(--wine-deep)} .dist-sec .entry h3 .key{color:var(--wine)}
+  .dist-sec .tag.hot{border-color:var(--wine);color:var(--wine-deep);background:rgba(154,63,99,.08)}
+  .dist-sec .entry:hover .idx{color:var(--wine)} .dist-sec .callout{border-left-color:var(--wine)} .dist-sec .callout b{color:var(--wine-deep)}
+
+  /* ===== capacity interlude ===== */
+  .budget{background:var(--paper-2);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);margin-top:70px}
+  .budget-inner{max-width:1180px;margin:0 auto;padding:60px 40px}
+  .budget-head{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:end}
+  .budget .kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:18px}
+  .budget h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,4.6vw,56px);line-height:.98;letter-spacing:-.02em}
+  .budget h2 em{font-style:italic;font-weight:500;color:var(--amber)}
+  .budget .note{font-size:17px;color:rgba(14,12,8,.8)}
+  .budget .note b{color:var(--ink)}
+  .budget-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px}
+  .bcard{background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:24px;box-shadow:5px 5px 0 rgba(14,12,8,.12)}
+  .bcard .size{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.06em;color:var(--teal);text-transform:uppercase;margin-bottom:10px}
+  .bcard .big{font-family:"Fraunces",serif;font-weight:900;font-size:40px;line-height:1;margin-bottom:14px}
+  .bcard p{font-size:16px;color:rgba(14,12,8,.82)}
+  .bcard.warn{border-color:var(--amber);box-shadow:5px 5px 0 rgba(201,98,29,.18)}
+  .bcard.warn .size,.bcard.warn .big{color:var(--amber-deep)}
+  .budget-meter{margin-top:38px;background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:22px 24px}
+  .budget-meter .mhead{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(14,12,8,.7);margin-bottom:12px}
+  .bar{height:14px;border-radius:100px;background:rgba(14,12,8,.12);overflow:hidden;display:flex}
+  .bar i{display:block;height:100%}
+  .bar .full{background:var(--teal);width:67%}
+  .bar .dropped{background:repeating-linear-gradient(45deg,var(--amber),var(--amber) 6px,var(--amber-deep) 6px,var(--amber-deep) 12px);width:33%}
+  .budget-meter .legend{display:flex;gap:24px;margin-top:14px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;color:rgba(14,12,8,.7)}
+  .budget-meter .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:middle}
+  .legend .lf::before{background:var(--teal)} .legend .ld::before{background:var(--amber)}
+  .budget .src{margin-top:22px;font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.03em;color:rgba(14,12,8,.55);font-style:normal}
+  .budget .src a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(44,110,99,.4)}
+
+  /* ===== hierarchy ladders ===== */
+  .hier-wrap{max-width:1180px;margin:0 auto;padding:34px 40px 0}
+  .hier{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .ladder{background:var(--paper-2);border:1px solid var(--line-strong);border-radius:10px;padding:24px;box-shadow:5px 5px 0 rgba(14,12,8,.1)}
+  .ladder h4{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:3px}
+  .ladder .cap{font-size:14px;color:rgba(14,12,8,.62);font-style:italic;margin-bottom:18px;font-family:"Newsreader",serif}
+  .rung{display:flex;align-items:baseline;gap:14px;padding:11px 14px;border-radius:7px;background:var(--paper);border:1px solid var(--line);margin-bottom:8px}
+  .rung .lvl{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--teal);min-width:70px;text-transform:uppercase}
+  .rung .nm{font-weight:600;font-size:16px}
+  .rung .nm code{font-family:"JetBrains Mono",monospace;font-size:12px;color:rgba(14,12,8,.6);display:block;margin-top:2px;font-weight:400}
+  .rung.top{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+  .rung.top .lvl{color:var(--gold-deep)}
+  .ladder .arrow{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(14,12,8,.5);text-align:center;margin-top:6px}
+
+  /* ===== appendix template ===== */
+  .tpl-wrap{max-width:1180px;margin:0 auto;padding:34px 40px 10px}
+  .tpl-grid{display:grid;grid-template-columns:310px 1fr;gap:24px;align-items:start}
+  .tpl-tree{background:var(--paper-2);border:1px solid var(--line-strong);border-radius:10px;padding:22px 24px;box-shadow:5px 5px 0 rgba(14,12,8,.1)}
+  .tpl-tree h4{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:14px}
+  .tpl-tree pre{margin:0;background:none;color:var(--ink);box-shadow:none;padding:0;font-size:12.5px;line-height:1.95}
+  .tpl-tree .dir{color:var(--wine)} .tpl-tree .cm{color:rgba(14,12,8,.45)}
+  .tpl-tree .h{color:var(--amber-deep);font-weight:700}
+  .tpl-file{border-radius:10px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,12,8,.18)}
+  .codehead{display:flex;justify-content:space-between;align-items:center;background:#1c1813;padding:11px 16px;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.08em}
+  .codehead .fn{color:var(--gold)}
+  .copybtn{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--amber);color:var(--paper);border:none;border-radius:4px;padding:6px 15px;cursor:pointer;transition:background .2s ease}
+  .copybtn:hover{background:var(--amber-deep)}
+  .copybtn.done{background:var(--teal)}
+  .tpl-file pre{margin:0;border-radius:0;box-shadow:none;font-size:13px;line-height:1.78}
+
+  /* ===== footer ===== */
+  footer{background:var(--ink);color:var(--paper);margin-top:70px;padding:70px 40px}
+  .foot-wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end}
+  footer h4{font-family:"Fraunces",serif;font-weight:500;font-style:italic;font-size:clamp(26px,4vw,46px);line-height:1.1;max-width:640px}
+  footer h4 b{font-style:normal;font-weight:900;color:var(--gold)}
+  .foot-meta{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,234,215,.55);text-align:right;line-height:2}
+  .foot-meta a{color:var(--gold);text-decoration:none}
+  .checklist{max-width:1180px;margin:50px auto 0;border-top:1px solid rgba(243,234,215,.2);padding-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+  .checklist div{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.04em;color:rgba(243,234,215,.7)}
+  .checklist div::before{content:"▢ ";color:var(--gold)}
+
+  /* ===== jump nav ===== */
+  .jumpnav{
+    position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:500;max-width:calc(100vw - 24px);
+    display:flex;gap:2px;padding:5px;border-radius:100px;
+    background:rgba(14,12,8,.92);backdrop-filter:blur(8px);
+    box-shadow:0 8px 28px rgba(14,12,8,.28),inset 0 0 0 1px rgba(243,234,215,.08);
+  }
+  .jumpnav a{
+    font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(243,234,215,.62);text-decoration:none;padding:9px 16px;border-radius:100px;
+    transition:color .25s ease,background .25s ease;white-space:nowrap;
+  }
+  .jumpnav a:hover{color:var(--paper)}
+  .jumpnav a.active{background:var(--amber);color:var(--paper)}
+  .jumpnav a.active.adv-link{background:var(--indigo);color:var(--paper)}
+  .jumpnav a.active.setup-link{background:var(--gold);color:var(--ink)}
+  .jumpnav a.active.field-link{background:var(--teal);color:var(--paper)}
+  .jumpnav a.active.dist-link{background:var(--wine);color:var(--paper)}
+  .jumpnav a.active.tpl-link{background:var(--paper);color:var(--ink)}
+  .jumpnav .sep{width:1px;align-self:stretch;margin:6px 0;background:rgba(243,234,215,.14)}
+
+  @media(max-width:720px){
+    header,main,.part{padding-left:22px;padding-right:22px}
+    .roadmap{padding-left:22px;padding-right:22px}
+    .entry{grid-template-columns:1fr;gap:14px}
+    .entry .idx{position:static;font-size:46px}
+    .foot-wrap{grid-template-columns:1fr}
+    .foot-meta{text-align:left}
+    .jumpnav a{padding:9px 11px;font-size:11px}
+    .jumpnav .lbl{display:none}
+    .jumpnav .sep{margin:7px 0}
+    .budget-inner,.hier-wrap,.tpl-wrap{padding-left:22px;padding-right:22px}
+    .budget-head{grid-template-columns:1fr;gap:20px}
+    .budget-grid{grid-template-columns:1fr}
+    .hier{grid-template-columns:1fr}
+    .tpl-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<header>
+  <div class="topbar">
+    <div><span class="dot"></span>Field Manual · Agent Skills</div>
+    <div>Rev 2026.06 / Five Parts</div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-num">27</div>
+    <div class="eyebrow">Authoring &amp; Maintenance Reference</div>
+    <h1>The Skill<br>Maintainer's<br><em>Codex</em></h1>
+    <p class="lede">A complete path from a single SKILL.md to a governed skill platform — <b>author, extend, configure, maintain, distribute</b>. Twenty-seven practices, each kept honest about what's documented versus what's hard-won convention.</p>
+    <div class="meta-row">
+      <div>Parts / <b>5 + Appendix</b></div>
+      <div>Practices / <b>27</b></div>
+      <div>Arc / <b>Build → Ship</b></div>
+      <div>Read / <b>~13 min</b></div>
+    </div>
+  </section>
+</header>
+
+<!-- ============ ROADMAP ============ -->
+<section class="roadmap" aria-label="Guide overview">
+  <div class="rm-head">
+    <span class="rm-kicker">The path</span>
+    <p class="rm-lead">Five phases, build to ship. Jump in anywhere — or read straight through.</p>
+  </div>
+  <div class="map-grid">
+    <a class="mapcard c1" href="#part-author"><span class="pn">Part I</span><span class="pt">Author</span><span class="pd">10 official authoring practices, straight from the docs.</span></a>
+    <a class="mapcard c2" href="#part-extend"><span class="pn">Part II</span><span class="pt">Extend</span><span class="pd">Invocation control, subagents, workflows, hooks.</span></a>
+    <a class="mapcard c3" href="#part-configure"><span class="pn">Part III</span><span class="pt">Configure</span><span class="pd">CLAUDE.md, the hierarchy, permanent permissions.</span></a>
+    <a class="mapcard c4" href="#part-maintain"><span class="pn">Part IV</span><span class="pt">Maintain</span><span class="pd">Versioning, changelog, CI, ownership — field hygiene.</span></a>
+    <a class="mapcard c5" href="#part-distribute"><span class="pn">Part V</span><span class="pt">Distribute</span><span class="pd">Plugins, marketplaces, portability, trust.</span></a>
+  </div>
+  <a class="rm-appendix" href="#appendix">→ Appendix · copy-paste SKILL.md starter template</a>
+</section>
+
+<!-- ============ PART I — AUTHOR ============ -->
+<section class="part" id="part-author">
+  <span class="part-tag official">Part I · Author</span>
+  <h2 class="part-title">Author it<br>the right way.</h2>
+  <p class="sub">Anthropic's documented best practices for writing a Skill that Claude can discover and use effectively. Everything here maps directly to the official guide.</p>
+  <p class="src">Source · <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Skill authoring best practices</a> + <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Agent Skills overview</a></p>
+</section>
+
+<main class="official-sec">
+
+  <article class="entry">
+    <div class="idx">01<span>AUTHOR</span></div>
+    <div>
+      <h3>Concise is key — <span class="key">assume Claude is smart</span></h3>
+      <p>The context window is a public good. Every token in <span class="mono">SKILL.md</span> competes with conversation history and other Skills. Only add context Claude doesn't already have — challenge each line: "Does it really need this? Does this paragraph justify its token cost?"</p>
+      <div class="callout"><b>Token budget</b>Keep the SKILL.md body under 500 lines; split into files past that.</div>
+      <div class="tags"><span class="tag hot">conciseness</span><span class="tag">&lt;500 lines</span><span class="tag">context budget</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">02<span>AUTHOR</span></div>
+    <div>
+      <h3>Build <span class="key">evaluations first</span></h3>
+      <p>Create evals <em>before</em> writing extensive documentation — it ensures the Skill solves real problems, not imagined ones. Run Claude on representative tasks without the Skill to find the gaps, build at least three scenarios that test them, baseline, then write the minimal instructions that pass.</p>
+      <pre>{
+  <span class="c">"skills"</span>: [<span class="a">"pdf-processing"</span>],
+  <span class="c">"query"</span>: <span class="a">"Extract all text and save to output.txt"</span>,
+  <span class="c">"expected_behavior"</span>: [<span class="g">"reads PDF",</span> <span class="g">"all pages",</span> <span class="g">"saves output.txt"</span>]
+}</pre>
+      <div class="tags"><span class="tag hot">eval-driven</span><span class="tag">≥3 scenarios</span><span class="tag">baseline first</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">03<span>AUTHOR</span></div>
+    <div>
+      <h3>Write the <span class="key">description</span> in third person</h3>
+      <p>The <span class="mono">description</span> is how Claude picks one Skill out of 100+. It must say <em>what it does</em> and <em>when to use it</em>, packed with concrete trigger terms — and always in third person, since it's injected into the system prompt.</p>
+      <pre><span class="g">✓</span> <span class="c">description:</span> Extract text and tables from PDFs, fill forms. Use when working with PDF files or forms.
+<span class="a">✗</span> "I can help you process PDFs"   <span class="g"># wrong POV</span></pre>
+      <div class="tags"><span class="tag hot">third person</span><span class="tag">trigger terms</span><span class="tag">what + when</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">04<span>AUTHOR</span></div>
+    <div>
+      <h3>Name with <span class="key">gerunds</span>, lowercase-hyphens</h3>
+      <p>Consistent names make Skills easy to reference and reason about. Prefer gerund form — <span class="mono">processing-pdfs</span>, <span class="mono">analyzing-spreadsheets</span>. The <span class="mono">name</span> field must be lowercase letters, numbers and hyphens only, max 64 chars, and may not contain reserved words ("anthropic", "claude").</p>
+      <p>Avoid vague names like <span class="mono">helper</span>, <span class="mono">utils</span>, or <span class="mono">tools</span>.</p>
+      <div class="tags"><span class="tag hot">gerund form</span><span class="tag">lowercase-hyphens</span><span class="tag">no reserved words</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">05<span>AUTHOR</span></div>
+    <div>
+      <h3>Use <span class="key">progressive disclosure</span></h3>
+      <p>SKILL.md is a table of contents, not the encyclopedia. Bundle detail in separate files that load only when needed. Keep references <em>one level deep</em> from SKILL.md (Claude may only partially read nested files), and give reference files over 100 lines a table of contents.</p>
+      <div class="callout"><b>Three load levels</b>Metadata always loaded → SKILL.md when triggered → bundled files &amp; scripts only when read. Scripts execute without entering context.</div>
+      <div class="tags"><span class="tag hot">progressive disclosure</span><span class="tag">one level deep</span><span class="tag">ToC over 100 lines</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">06<span>AUTHOR</span></div>
+    <div>
+      <h3>Set the right <span class="key">degrees of freedom</span></h3>
+      <p>Match specificity to the task's fragility. <b>High freedom</b> (text guidance) when many approaches work — e.g. code review. <b>Medium</b> (parameterized scripts) when a preferred pattern exists. <b>Low</b> (exact commands, "do not modify") when operations are fragile and order matters — e.g. database migrations.</p>
+      <div class="callout"><b>The bridge analogy</b>Narrow bridge over a cliff → exact guardrails. Open field → general direction, trust Claude to route.</div>
+      <div class="tags"><span class="tag hot">degrees of freedom</span><span class="tag">high / medium / low</span><span class="tag">fragility-matched</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">07<span>AUTHOR</span></div>
+    <div>
+      <h3>Provide <span class="key">workflows &amp; feedback loops</span></h3>
+      <p>Break complex tasks into clear sequential steps, and for multi-step work give Claude a checklist it can copy and tick off. Build in validator loops — <span class="mono">run validator → fix errors → repeat</span> — and create verifiable intermediate outputs (plan → validate → execute) for batch or destructive operations.</p>
+      <div class="tags"><span class="tag hot">checklists</span><span class="tag">validate → fix → repeat</span><span class="tag">plan-validate-execute</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">08<span>AUTHOR</span></div>
+    <div>
+      <h3>Test across <span class="key">all models</span> you'll use</h3>
+      <p>A Skill is an addition to a model, so its effectiveness depends on that model. Test with every model you plan to run it on. What works perfectly for Opus may underspecify for Haiku; what's crisp for Haiku may over-explain for Opus.</p>
+      <div class="tags"><span class="tag hot">multi-model</span><span class="tag">Haiku · Sonnet · Opus</span><span class="tag">real scenarios</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">09<span>AUTHOR</span></div>
+    <div>
+      <h3>Avoid <span class="key">time-sensitive</span> info; stay consistent</h3>
+      <p>Don't bake in "before August 2025…" — it goes stale. Put deprecated guidance in a collapsed "old patterns" section instead. And choose one term per concept and use it throughout (always "field", always "extract") — inconsistent vocabulary confuses the model.</p>
+      <div class="tags"><span class="tag hot">no time-sensitive</span><span class="tag">old-patterns section</span><span class="tag">consistent terms</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">10<span>AUTHOR</span></div>
+    <div>
+      <h3>Scripts that <span class="key">solve, don't punt</span></h3>
+      <p>When bundling code, handle errors explicitly rather than failing and leaving Claude to figure it out. No "voodoo constants" — justify every magic number. Use forward-slash paths (works everywhere), don't list five library options when one default will do, and reference MCP tools by fully-qualified name (<span class="mono">ServerName:tool_name</span>).</p>
+      <div class="tags"><span class="tag hot">solve don't punt</span><span class="tag">no voodoo constants</span><span class="tag">forward slashes</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- ============ PART II — EXTEND ============ -->
+<section class="part" id="part-extend">
+  <span class="part-tag adv">Part II · Extend</span>
+  <h2 class="part-title">Beyond a<br>single file.</h2>
+  <p class="sub">Once the basics are solid: decide who pulls the trigger, push heavy work into isolated subagents, compose multi-stage workflows, and reach for hooks when instructions alone can't guarantee a thing happens.</p>
+  <p class="src">Source · <a href="https://code.claude.com/docs/en/skills">Skills</a> · <a href="https://code.claude.com/docs/en/sub-agents">Subagents</a> · <a href="https://code.claude.com/docs/en/hooks-guide">Hooks</a></p>
+</section>
+
+<main class="adv-sec">
+
+  <article class="entry">
+    <div class="idx">11<span>EXTEND</span></div>
+    <div>
+      <h3>Control <span class="key">who invokes</span> a skill</h3>
+      <p>By default skills are <b>model-invoked</b> — Claude auto-triggers them from the description. For destructive or explicit-only actions, set <span class="mono">disable-model-invocation: true</span> so the skill runs only when the user types <span class="mono">/skill-name</span>. Capture input with the <span class="mono">$ARGUMENTS</span> placeholder.</p>
+      <pre><span class="g">---</span>
+<span class="c">description:</span> Deploy to production
+<span class="c">disable-model-invocation:</span> <span class="a">true</span>   <span class="g"># user-only, via /deploy</span>
+<span class="g">---</span></pre>
+      <div class="tags"><span class="tag hot">model vs user invoked</span><span class="tag">/skill-name</span><span class="tag">$ARGUMENTS</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">12<span>EXTEND</span></div>
+    <div>
+      <h3>Offload to <span class="key">subagents</span> for context &amp; cost</h3>
+      <p>A subagent is a specialized worker that runs in its <b>own context window</b> with a custom system prompt, restricted tools, and independent permissions — it does the noisy work (search, logs, exploration) and returns only a summary. Define one in <span class="mono">.claude/agents/</span> (or a plugin's <span class="mono">agents/</span>) and Claude delegates by matching its description.</p>
+      <pre><span class="g">---</span>
+<span class="c">name:</span> test-runner
+<span class="c">description:</span> Runs and triages the test suite
+<span class="c">tools:</span> Bash, Read, Grep      <span class="g"># least privilege</span>
+<span class="c">model:</span> haiku                 <span class="g"># cheap for grunt work</span>
+<span class="g">---</span></pre>
+      <p>Use them to preserve your main context, enforce tool limits, and route grunt work to faster, cheaper models.</p>
+      <div class="tags"><span class="tag hot">own context window</span><span class="tag">.claude/agents/</span><span class="tag">tools + model</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">13<span>EXTEND</span></div>
+    <div>
+      <h3>Compose when <span class="key">one skill isn't enough</span></h3>
+      <p>A single SKILL.md handles one job; real tasks often chain several. Compose the primitives: a <em>skill</em> supplies the procedure, <em>subagents</em> run heavy or isolated stages in their own context, and <em>hooks</em> gate the transitions between them. That separation is what makes long workflows reliable instead of brittle.</p>
+      <p>Inside each stage, lean on the step-level patterns from <b>Part I · 07</b> — checklists, validator loops, plan→validate→execute — rather than repeating them.</p>
+      <div class="callout"><b>Pattern</b>Orchestrator skill → a subagent per stage → a hook at each gate. Keep every stage independently verifiable.</div>
+      <div class="tags"><span class="tag hot">composition</span><span class="tag">skill + subagent + hook</span><span class="tag">isolated stages</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">14<span>EXTEND</span></div>
+    <div>
+      <h3>Enforce with <span class="key">hooks</span> what instructions can't</h3>
+      <p>CLAUDE.md and skills are <em>context</em>, not guarantees — Claude reads them but may not comply perfectly. For anything that <b>must</b> happen every time (lint before commit, block a protected path, auto-sync the repo), use a <span class="mono">PreToolUse</span> / <span class="mono">PostToolUse</span> hook: a shell command fired at a fixed lifecycle event, run by the harness regardless of what Claude decides.</p>
+      <p>Hooks are the deterministic backstop beneath your CLAUDE.md and ops conventions (Parts III–IV) — they're how "always" actually becomes always.</p>
+      <div class="tags"><span class="tag hot">PreToolUse / PostToolUse</span><span class="tag">deterministic</span><span class="tag">the enforcement layer</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- ============ INTERLUDE — HOW MANY SKILLS ============ -->
+<section class="budget">
+  <div class="budget-inner">
+    <div class="budget-head">
+      <div>
+        <div class="kicker">Interlude · Capacity</div>
+        <h2>How many Skills<br>before it <em>strains?</em></h2>
+      </div>
+      <p class="note">There's no documented hard cap — Claude selects "from <b>100+</b> Skills." The real limit is a <b>character budget</b> for the skill metadata in the system prompt. Past it, the descriptions of your <b>least-used</b> Skills get trimmed or dropped — silently.</p>
+    </div>
+
+    <div class="budget-grid">
+      <div class="bcard">
+        <div class="size">Comfortable</div>
+        <div class="big">&lt; 30</div>
+        <p>Plenty of headroom. Just keep each description distinct and keyword-rich.</p>
+      </div>
+      <div class="bcard">
+        <div class="size">Tighten up</div>
+        <div class="big">40–60</div>
+        <p>Keep descriptions under <b>~150 chars</b>, trigger terms in the first ~50. Crowding starts to bite.</p>
+      </div>
+      <div class="bcard warn">
+        <div class="size">Crowded</div>
+        <div class="big">60+</div>
+        <p>Under <b>~130 chars</b> each; expect least-used skills to get trimmed. Split project vs. global scope.</p>
+      </div>
+    </div>
+
+    <div class="budget-meter">
+      <div class="mhead"><span>Observed: 63 skills installed</span><span>~16k char budget</span></div>
+      <div class="bar"><i class="full"></i><i class="dropped"></i></div>
+      <div class="legend">
+        <span class="lf">42 visible to Claude</span>
+        <span class="ld">21 silently hidden (~33%)</span>
+      </div>
+    </div>
+
+    <p class="src">Budget block ≈ <b>15.5–16k chars (~1% of context window)</b>; names always shown, descriptions dropped least-used-first. Figures are community-measured, not official — see <a href="https://github.com/anthropics/claude-code/issues/13099">claude-code #13099</a>. Bottom line: plan for ~40–60 well-described Skills; <b>description quality matters more than count</b> (see Part I · 03–04).</p>
+  </div>
+</section>
+
+<!-- ============ PART III — CONFIGURE ============ -->
+<section class="part" id="part-configure">
+  <span class="part-tag setup">Part III · Configure</span>
+  <h2 class="part-title">Wire it once,<br>stop repeating.</h2>
+  <p class="sub">Skills don't live in a vacuum. <b>CLAUDE.md</b> gives Claude the standing context it needs, and <b>permissions</b> decide what runs without a prompt. Both are layered — broad to specific — so a few files set the tone for every session.</p>
+  <p class="src">Source · <a href="https://code.claude.com/docs/en/memory">Memory / CLAUDE.md</a> · <a href="https://code.claude.com/docs/en/settings">Settings &amp; permissions</a></p>
+</section>
+
+<div class="hier-wrap">
+  <div class="hier">
+    <div class="ladder">
+      <h4>CLAUDE.md · Memory</h4>
+      <p class="cap">All files concatenated — closest to you is read last.</p>
+      <div class="rung top"><span class="lvl">Managed</span><span class="nm">Org policy<code>/Library/.../ClaudeCode/CLAUDE.md</code></span></div>
+      <div class="rung"><span class="lvl">User</span><span class="nm">Personal, all projects<code>~/.claude/CLAUDE.md</code></span></div>
+      <div class="rung"><span class="lvl">Project</span><span class="nm">Team-shared, in git<code>./CLAUDE.md · ./.claude/CLAUDE.md</code></span></div>
+      <div class="rung"><span class="lvl">Local</span><span class="nm">Just you, gitignored<code>./CLAUDE.local.md</code></span></div>
+      <div class="arrow">▲ broad scope · specific scope ▼</div>
+    </div>
+    <div class="ladder">
+      <h4>Permissions · settings.json</h4>
+      <p class="cap">Highest layer wins — and deny always beats allow.</p>
+      <div class="rung top"><span class="lvl">Managed</span><span class="nm">IT policy — can't override<code>managed-settings.json</code></span></div>
+      <div class="rung"><span class="lvl">CLI args</span><span class="nm">Session-only overrides<code>--allowedTools …</code></span></div>
+      <div class="rung"><span class="lvl">Local</span><span class="nm">Personal, gitignored<code>.claude/settings.local.json</code></span></div>
+      <div class="rung"><span class="lvl">Project</span><span class="nm">Team-shared, in git<code>.claude/settings.json</code></span></div>
+      <div class="rung"><span class="lvl">User</span><span class="nm">Personal default<code>~/.claude/settings.json</code></span></div>
+      <div class="arrow">▲ high priority · low priority ▼</div>
+    </div>
+  </div>
+</div>
+
+<main class="setup-sec">
+
+  <article class="entry">
+    <div class="idx">15<span>CONFIGURE</span></div>
+    <div>
+      <h3>Build <span class="key">CLAUDE.md</span> for what you'd re-explain</h3>
+      <p>CLAUDE.md is loaded every session, so put <em>facts</em> there, not procedures: build/test commands, conventions, project layout, "always do X" rules. Run <span class="mono">/init</span> to generate a first draft from your codebase, then refine. Write the thing you keep re-typing into chat.</p>
+      <p>Be specific and concise — <span class="mono">"Use 2-space indentation"</span> beats "format nicely." Keep it <b>under ~200 lines</b>; longer files dilute adherence. Multi-step or path-specific guidance belongs in a <b>skill</b> or a <span class="mono">.claude/rules/</span> file instead.</p>
+      <div class="callout"><b>Tip</b>Pull in external files with <span class="mono">@path</span> imports (e.g. <span class="mono">@AGENTS.md</span>) — they expand into context at launch, max four hops deep.</div>
+      <div class="tags"><span class="tag hot">/init</span><span class="tag">&lt;200 lines</span><span class="tag">facts not procedures</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">16<span>CONFIGURE</span></div>
+    <div>
+      <h3>Know the <span class="key">hierarchy</span> — it stacks, it doesn't fight</h3>
+      <p>CLAUDE.md files don't override each other; they're <b>concatenated</b> from broadest (managed → user → project → local) down to most specific, so instructions closest to where you launched Claude are read last. Files in subdirectories load <em>on demand</em> when Claude touches files there.</p>
+      <p>Permissions follow a precedence order instead: <b>managed → CLI → local → project → user</b>. They merge across layers, but <b>deny always wins</b> — a project denial overrides a user allow. Use <span class="mono">/memory</span> and <span class="mono">/permissions</span> to see exactly what's loaded and why.</p>
+      <div class="tags"><span class="tag hot">concatenated, not overridden</span><span class="tag">deny wins</span><span class="tag">subdir = on demand</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">17<span>CONFIGURE</span></div>
+    <div>
+      <h3>Grant <span class="key">permanent permission</span> so it stops asking</h3>
+      <p>To stop the per-use prompt, add an <span class="mono">allow</span> rule to <span class="mono">settings.json</span>. Allow a skill by name, and allow the tools it runs (Bash patterns support <span class="mono">*</span>). The fastest path: when a prompt appears, choose <b>"Yes, and don't ask again"</b> — it writes the rule to <span class="mono">.claude/settings.local.json</span> for you.</p>
+      <pre>{
+  <span class="c">"permissions"</span>: {
+    <span class="c">"allow"</span>: [
+      <span class="a">"Skill(code-review)"</span>,
+      <span class="a">"Bash(npm run test:*)"</span>,
+      <span class="a">"Bash(git status)"</span>
+    ]
+  }
+}</pre>
+      <p>Pick the layer by reach: <span class="mono">~/.claude/settings.json</span> for all your projects, <span class="mono">.claude/settings.json</span> to share with the team (commit it), or <span class="mono">.claude/settings.local.json</span> for just you (gitignored).</p>
+      <div class="callout"><b>Why it still asks</b>Most repeat prompts come from the <em>Bash commands a skill runs</em>, not the skill itself — so allowlist those <span class="mono">Bash(...)</span> patterns, not just <span class="mono">Skill(name)</span>.</div>
+      <div class="tags"><span class="tag hot">permissions.allow</span><span class="tag">Skill(name)</span><span class="tag">don't ask again</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- ============ PART IV — MAINTAIN ============ -->
+<section class="part" id="part-maintain">
+  <span class="part-tag field">Part IV · Maintain</span>
+  <h2 class="part-title">Keep it<br>trustworthy.</h2>
+  <p class="sub">Practices for keeping a growing Skill library reliable over time. These are general software-engineering conventions — high value, but the part of this guide that is <em>not</em> in Anthropic's official spec.</p>
+  <div class="disclaimer">Heads-up: none of these are required by the SKILL.md format. Notably, there's no <span class="mono">version</span> field in the frontmatter and Skills don't auto-sync across surfaces — so treat this part as team convention, not platform features.</div>
+</section>
+
+<main class="field-sec">
+
+  <article class="entry">
+    <div class="idx">18<span>MAINTAIN</span></div>
+    <div>
+      <h3>One <span class="key">source of truth</span> + auto-sync</h3>
+      <p>A Skill scattered across laptops and "final_v2" folders drifts until no one knows which copy is real. Make the git repo canonical and automate the sync into wherever Skills load, so the deployed Skill <em>is</em> the committed Skill. Pull, don't paste.</p>
+      <pre><span class="c"># post-merge: sync canonical skills into the live dir</span>
+rsync -a --delete repo/skills/  ~/.claude/skills/
+<span class="g"># one direction only — repo is upstream</span></pre>
+      <div class="tags"><span class="tag hot">source of truth</span><span class="tag">auto-sync</span><span class="tag">team convention</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">19<span>MAINTAIN</span></div>
+    <div>
+      <h3>Track a <span class="key">version</span></h3>
+      <p>The spec only requires <span class="mono">name</span> + <span class="mono">description</span>, but I add a SemVer-style version (in frontmatter or a sidecar file) so rollbacks are possible and bug reports are legible — "broke in 2.1.0" beats "broke sometime." MAJOR for breaking behavior, MINOR for capability, PATCH for fixes.</p>
+      <div class="tags"><span class="tag hot">semver</span><span class="tag">rollback</span><span class="tag">not in spec</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">20<span>MAINTAIN</span></div>
+    <div>
+      <h3>Keep a <span class="key">changelog</span></h3>
+      <p>Pair every version bump with a human-readable "what changed and why," grouped Added / Changed / Fixed / Deprecated. One scannable file beats reading diffs to reconstruct history — especially when teammates depend on the Skill.</p>
+      <pre><span class="c">## [2.3.1] — 2026-06-10</span>
+<span class="a">### Fixed</span> false trigger on docs-only PRs
+<span class="a">### Changed</span> tightened description trigger terms</pre>
+      <div class="tags"><span class="tag hot">changelog</span><span class="tag">keep-a-changelog</span><span class="tag">history</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">21<span>MAINTAIN</span></div>
+    <div>
+      <h3>Gate with <span class="key">CI validation</span></h3>
+      <p>Don't trust frontmatter by eye. Run a CI check on every PR that validates the YAML schema and required fields, verifies internal links resolve one level deep, and runs the eval suite. The official docs ship a pre-share checklist — I just automate it.</p>
+      <pre><span class="c">✓</span> frontmatter valid · <span class="c">✓</span> links resolve
+<span class="c">✓</span> version bumped + changelog entry
+<span class="c">✓</span> 24/24 eval cases pass</pre>
+      <div class="tags"><span class="tag hot">CI gate</span><span class="tag">schema lint</span><span class="tag">automate the checklist</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">22<span>MAINTAIN</span></div>
+    <div>
+      <h3>Audit for <span class="key">least privilege</span></h3>
+      <p>A Skill is a security surface — even your own. Keep bundled scripts narrow and idempotent, avoid surprise network calls, and review what each Skill can actually reach before it ships. (Adopting <em>other people's</em> skills is its own discipline — see Part V · 27.)</p>
+      <div class="tags"><span class="tag hot">least privilege</span><span class="tag">audit bundled code</span><span class="tag">idempotent</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">23<span>MAINTAIN</span></div>
+    <div>
+      <h3>Assign <span class="key">owners</span>, deprecate gracefully</h3>
+      <p>Every Skill needs a name attached — someone who answers "is this still right?" When one outlives its purpose, deprecate loudly: note it in the changelog, point to the replacement, give a migration window. (The docs' "old patterns" section from Part I · 09 is the in-file half of this.)</p>
+      <div class="callout"><b>Lifecycle</b>Born → owned → versioned → deprecated → removed. Never just abandoned.</div>
+      <div class="tags"><span class="tag hot">ownership</span><span class="tag">graceful deprecation</span><span class="tag">migration notes</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- ============ PART V — DISTRIBUTE ============ -->
+<section class="part" id="part-distribute">
+  <span class="part-tag dist">Part V · Distribute</span>
+  <h2 class="part-title">Ship it past<br>your own laptop.</h2>
+  <p class="sub">A skill only earns its keep when others can install it safely. Package it, distribute it, keep it portable across surfaces — and treat every third-party skill as code you're choosing to run.</p>
+  <p class="src">Source · <a href="https://code.claude.com/docs/en/plugins">Plugins</a> · <a href="https://code.claude.com/docs/en/plugin-marketplaces">Marketplaces</a> · <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Skills overview</a></p>
+</section>
+
+<main class="dist-sec">
+
+  <article class="entry">
+    <div class="idx">24<span>DISTRIBUTE</span></div>
+    <div>
+      <h3>Package skills into <span class="key">plugins</span></h3>
+      <p>Start standalone in <span class="mono">.claude/skills/</span> for fast iteration; convert to a <b>plugin</b> when you're ready to share. A plugin is a self-contained directory with a <span class="mono">.claude-plugin/plugin.json</span> manifest that can bundle <span class="mono">skills/</span>, <span class="mono">agents/</span>, <span class="mono">hooks/</span>, and MCP servers. Skills get namespaced as <span class="mono">/plugin-name:skill</span> to avoid collisions.</p>
+      <pre>{
+  <span class="c">"name"</span>: <span class="a">"pr-toolkit"</span>,
+  <span class="c">"description"</span>: <span class="a">"PR review + changelog skills"</span>,
+  <span class="c">"version"</span>: <span class="a">"1.2.0"</span>,
+  <span class="c">"author"</span>: { <span class="c">"name"</span>: <span class="a">"you"</span> }
+}</pre>
+      <p>Test locally with <span class="mono">claude --plugin-dir ./pr-toolkit</span> and hot-reload with <span class="mono">/reload-plugins</span>.</p>
+      <div class="tags"><span class="tag hot">plugin.json</span><span class="tag">namespaced skills</span><span class="tag">--plugin-dir</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">25<span>DISTRIBUTE</span></div>
+    <div>
+      <h3>Distribute through <span class="key">marketplaces</span></h3>
+      <p>A marketplace is just a git repo with a <span class="mono">.claude-plugin/marketplace.json</span> catalog. Users run <span class="mono">/plugin marketplace add &lt;repo&gt;</span> then <span class="mono">/plugin install</span>. Keep it private for internal-only skills, or submit to Anthropic's <span class="mono">claude-community</span> marketplace for public reach.</p>
+      <p>Set an explicit <span class="mono">version</span> so installs are stable — omit it and every git commit counts as a new version. Always run <span class="mono">claude plugin validate</span> before publishing.</p>
+      <div class="callout"><b>Versioned releases</b>This is where Part IV's SemVer + changelog finally pay off — pinned versions give users controlled, reviewable updates.</div>
+      <div class="tags"><span class="tag hot">marketplace.json</span><span class="tag">/plugin install</span><span class="tag">plugin validate</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">26<span>DISTRIBUTE</span></div>
+    <div>
+      <h3>Plan for <span class="key">cross-surface</span> portability</h3>
+      <p>Skills <b>do not sync</b> across claude.ai, the Claude API, and Claude Code — each surface is managed separately, with different runtime limits (the API has no network or package install; Claude Code has full access). Don't assume "uploaded once = available everywhere."</p>
+      <p>The format itself is portable: skills follow the <b>Agent Skills open standard</b>, so the same <span class="mono">SKILL.md</span> travels even when the install path doesn't. Keep your repo canonical (Part IV · 18) and publish outward to each surface.</p>
+      <div class="tags"><span class="tag hot">no auto-sync</span><span class="tag">open standard</span><span class="tag">per-surface limits</span></div>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="idx">27<span>DISTRIBUTE</span></div>
+    <div>
+      <h3>Treat skills as a <span class="key">supply chain</span></h3>
+      <p>Skills carry instructions and executable code, so a malicious one can misuse tools, exfiltrate data, or smuggle prompt-injection through a fetched URL. Install only from sources you trust, and <b>audit every bundled file</b> — SKILL.md, scripts, hooks — before adopting a community plugin.</p>
+      <p>Be especially wary of skills that pull external content at runtime; even a trustworthy skill can be compromised through its dependencies. The rule: <em>treat installing a skill like installing software.</em></p>
+      <div class="callout"><b>Before you adopt</b>Run <span class="mono">claude plugin validate</span>, read the scripts, and check for network calls that don't match the stated purpose.</div>
+      <div class="tags"><span class="tag hot">audit before install</span><span class="tag">prompt-injection</span><span class="tag">trusted sources only</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- ============ APPENDIX — STARTER TEMPLATE ============ -->
+<section class="part" id="appendix">
+  <span class="part-tag tpl">Appendix · Starter</span>
+  <h2 class="part-title">Copy. Rename.<br>Ship.</h2>
+  <p class="sub">A canonical <span class="mono">SKILL.md</span> that already follows the rules above — concise body, third-person trigger-rich description, progressive-disclosure references, and a validator-loop workflow. Drop it in <span class="mono">.claude/skills/your-skill-name/</span> and edit.</p>
+</section>
+
+<div class="tpl-wrap">
+  <div class="tpl-grid">
+    <div class="tpl-tree">
+      <h4>Directory scaffold</h4>
+<pre>your-skill-name/
+├── <span class="h">SKILL.md</span>          <span class="cm"># entry point, &lt;500 lines</span>
+├── <span class="dir">reference/</span>
+│   └── details.md    <span class="cm"># loaded on demand</span>
+├── <span class="dir">examples/</span>
+│   └── basic.md      <span class="cm"># input → output pairs</span>
+└── <span class="dir">scripts/</span>
+    └── validate.py   <span class="cm"># executed, not read</span></pre>
+    </div>
+
+    <div class="tpl-file">
+      <div class="codehead"><span class="fn">SKILL.md</span><button class="copybtn" id="copyTpl" type="button">Copy</button></div>
+<pre id="tplCode"><span class="g">---</span>
+<span class="c">name:</span> <span class="a">your-skill-name</span>          <span class="g"># lowercase-hyphens, gerund form</span>
+<span class="c">description:</span> <span class="a">Does X for Y.</span> Use when <span class="a">&lt;trigger terms a user would type&gt;</span>.
+<span class="g">---</span>
+
+<span class="h"># Your Skill Name</span>
+
+<span class="h">## Quick start</span>
+The single most common path — one minimal, working example.
+Assume Claude already knows the basics; add only what it doesn't.
+
+<span class="h">## Workflow</span>
+Copy this checklist and check off each step:
+
+- [ ] Step 1: &lt;action&gt;
+- [ ] Step 2: &lt;action&gt;
+- [ ] Step 3: validate — run <span class="ck">`scripts/validate.py`</span>, fix errors, repeat
+
+<span class="h">## Reference</span>  <span class="g"># one level deep, loaded only when needed</span>
+- Advanced options → <span class="ck">reference/details.md</span>
+- Worked examples  → <span class="ck">examples/basic.md</span>
+
+<span class="h">## Rules</span>
+- ALWAYS &lt;hard requirement&gt;.
+- NEVER &lt;anti-pattern&gt;.</pre>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-wrap">
+    <h4>Follow the <b>official spec</b> to ship. Add the <b>field hygiene</b> to scale.</h4>
+    <div class="foot-meta">
+      The Skill Maintainer's Codex<br>
+      5 Parts · 27 Practices · <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">docs</a><br>
+      Author → Extend → Configure → Maintain → Distribute<br>
+      Rev 2026.06
+    </div>
+  </div>
+  <div class="checklist">
+    <div>concise, &lt;500 lines</div>
+    <div>evals built first</div>
+    <div>third-person description</div>
+    <div>gerund name</div>
+    <div>progressive disclosure</div>
+    <div>degrees of freedom set</div>
+    <div>workflows + loops</div>
+    <div>tested Haiku/Sonnet/Opus</div>
+    <div>no time-sensitive info</div>
+    <div>scripts solve, don't punt</div>
+    <div>invocation controlled</div>
+    <div>subagents for heavy work</div>
+    <div>stages composed</div>
+    <div>hooks enforce criticals</div>
+    <div>CLAUDE.md &lt;200 lines</div>
+    <div>hierarchy understood</div>
+    <div>permissions allowlisted</div>
+    <div>repo = source of truth</div>
+    <div>versioned + changelog</div>
+    <div>CI gate green</div>
+    <div>least-privilege audit</div>
+    <div>owner assigned</div>
+    <div>packaged as plugin</div>
+    <div>published + validated</div>
+    <div>cross-surface planned</div>
+    <div>supply-chain audited</div>
+  </div>
+</footer>
+
+<nav class="jumpnav" aria-label="Jump between parts">
+  <a href="#part-author" data-target="part-author"><span class="rn">I</span><span class="lbl"> · Author</span></a>
+  <span class="sep"></span>
+  <a href="#part-extend" class="adv-link" data-target="part-extend"><span class="rn">II</span><span class="lbl"> · Extend</span></a>
+  <span class="sep"></span>
+  <a href="#part-configure" class="setup-link" data-target="part-configure"><span class="rn">III</span><span class="lbl"> · Configure</span></a>
+  <span class="sep"></span>
+  <a href="#part-maintain" class="field-link" data-target="part-maintain"><span class="rn">IV</span><span class="lbl"> · Maintain</span></a>
+  <span class="sep"></span>
+  <a href="#part-distribute" class="dist-link" data-target="part-distribute"><span class="rn">V</span><span class="lbl"> · Distribute</span></a>
+  <span class="sep"></span>
+  <a href="#appendix" class="tpl-link" data-target="appendix"><span class="rn">A</span><span class="lbl"> · Template</span></a>
+</nav>
+
+<script>
+  /* reveal on scroll */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach((e)=>{
+      if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  },{threshold:.12});
+  document.querySelectorAll(".entry").forEach(el=>io.observe(el));
+
+  /* reading progress + scroll-spy for the jump nav */
+  const navLinks = [...document.querySelectorAll(".jumpnav a")];
+  const sections = navLinks.map(a=>document.getElementById(a.dataset.target));
+  const progress = document.getElementById("progress");
+  function onScroll(){
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (max>0 ? (window.scrollY/max)*100 : 0) + "%";
+    const y = window.scrollY + window.innerHeight*0.4;
+    let idx = 0;
+    sections.forEach((s,i)=>{ if(s && y >= s.offsetTop) idx = i; });
+    navLinks.forEach((a,i)=>a.classList.toggle("active", i===idx));
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* copy the SKILL.md template */
+  const copyBtn = document.getElementById("copyTpl");
+  copyBtn.addEventListener("click", async ()=>{
+    const text = document.getElementById("tplCode").innerText;
+    try{ await navigator.clipboard.writeText(text); }
+    catch(_){ const t=document.createElement("textarea"); t.value=text; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    copyBtn.textContent = "Copied ✓";
+    copyBtn.classList.add("done");
+    setTimeout(()=>{ copyBtn.textContent="Copy"; copyBtn.classList.remove("done"); }, 1800);
+  });
+</script>
+
+</body>
+</html>
