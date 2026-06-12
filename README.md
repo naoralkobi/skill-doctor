@@ -10,8 +10,8 @@ guide, gives your setup a **health score**, and applies safe auto-fixes.
 It is both a **standalone CLI** and a **Claude skill** (`/skill-doctor`). It is
 read-only by default and never touches installed/third-party skills.
 
-> Built to enforce — and pass — the **[Skill Maintainer's Codex](docs/skill-maintainers-codex.html)**,
-> the 27-practice reference bundled in `docs/`. `skill-doctor` scores **A** on its own audit.
+> 📖 **Read the guide:** [The Skill Maintainer's Codex](https://naoralkobi.github.io/skill-doctor/)
+> — the 27-practice reference this tool enforces (and scores **A** against itself).
 
 ---
 
@@ -171,10 +171,12 @@ budget_chars = 15500
 
 ## The guide
 
-`docs/skill-maintainers-codex.html` is the **Skill Maintainer's Codex** — a
-self-contained, 27-practice reference covering the full lifecycle: Author →
-Extend → Configure → Maintain → Distribute. Open it in any browser. Every
-`skill-doctor` finding cites a practice from it (e.g. `Part I·03`).
+The **Skill Maintainer's Codex** is a self-contained, 27-practice reference
+covering the full lifecycle: Author → Extend → Configure → Maintain → Distribute.
+Every `skill-doctor` finding cites a practice from it (e.g. `Part I·03`).
+
+- 🌐 Live: **https://naoralkobi.github.io/skill-doctor/**
+- 📄 Source: [`docs/index.html`](docs/index.html)
 
 ---
 
