@@ -82,15 +82,22 @@ def discover(scope: str = "all", extra_paths: Iterable[Path] = (),
                                   label=_skill_label(sk)))
 
     # ---- installed / third-party skills (read-only) ----
+    # The same skill often appears in both plugins/cache and plugins/marketplaces;
+    # dedupe by name so it's only audited (and scored) once.
     if include_installed and want_user:
+        installed_labels: set[str] = set()
         for base in (home / "plugins" / "cache", home / "plugins" / "marketplaces"):
             for sk in _find_skill_mds(base):
                 rp = sk.resolve()
                 if rp in seen:
                     continue
+                label = _skill_label(sk)
+                if label in installed_labels:
+                    continue
                 seen.add(rp)
+                installed_labels.add(label)
                 arts.append(Artifact("skill", sk, "installed", editable=False,
-                                     label=_skill_label(sk)))
+                                     label=label))
 
     # ---- subagents ----
     agent_roots: list[tuple[Path, str, bool]] = []

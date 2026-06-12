@@ -19,7 +19,8 @@ from pathlib import Path
 from typing import Any
 
 from discovery import Artifact
-from parse import Document, find_local_links, load_json, parse_document
+from parse import (Document, find_local_links, load_json, parse_document,
+                   strip_code_fences)
 
 RESERVED_WORDS = ("anthropic", "claude")
 NAME_RE = re.compile(r"^[a-z0-9-]{1,64}$")
@@ -175,16 +176,18 @@ def _skill_rules(ctx: Context, art: Artifact) -> list[Finding]:
         add("SK006", "warn", f"SKILL.md body is {doc.body_lines} lines (keep <500).",
             "Part I·01")
 
+    body_nc = strip_code_fences(doc.body)
+
     # reference link rules (SK007/008/009)
     out += _reference_rules(ctx, art, doc, origin)
 
     # SK010 windows paths
-    if WIN_PATH_RE.search(doc.body):
+    if WIN_PATH_RE.search(body_nc):
         add("SK010", "warn", "Windows-style backslash path found; use forward slashes.",
             "Part I·10", autofix=True, fix_kind="winpath")
 
     # SK011 time-sensitive
-    if TIME_RE.search(doc.body):
+    if TIME_RE.search(body_nc):
         add("SK011", "info", "Time-sensitive phrasing found; move to an \"old patterns\" note.",
             "Part I·09")
 
@@ -203,7 +206,7 @@ def _skill_rules(ctx: Context, art: Artifact) -> list[Finding]:
 def _reference_rules(ctx: Context, art: Artifact, doc: Document, origin: str) -> list[Finding]:
     out: list[Finding] = []
     base = art.path.parent
-    for target in find_local_links(doc.body):
+    for target in find_local_links(strip_code_fences(doc.body)):
         tpath = (base / target).resolve()
         if not tpath.exists():
             out.append(Finding("SK007", "error",
@@ -214,7 +217,7 @@ def _reference_rules(ctx: Context, art: Artifact, doc: Document, origin: str) ->
         if tpath.suffix == ".md":
             try:
                 sub = parse_document(tpath)
-                deeper = [t for t in find_local_links(sub.body)
+                deeper = [t for t in find_local_links(strip_code_fences(sub.body))
                           if (tpath.parent / t).resolve().suffix == ".md"]
                 if deeper:
                     out.append(Finding("SK008", "warn",

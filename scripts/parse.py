@@ -133,24 +133,30 @@ def load_toml(path: Path) -> dict[str, Any]:
         return {}
 
 
-# Markdown link extraction: [text](target) and bare reference paths.
-_MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-# "see reference/foo.md" style bare references — require a path separator so we
-# don't treat prose mentions of a bare "SKILL.md" as links.
-_BARE_REF_RE = re.compile(r"(?<![\w(])((?:\.{0,2}/)?[\w.-]+/[\w./-]+\.md)\b")
+# Markdown link extraction: [text](target). We only trust explicit markdown
+# links — bare prose mentions and URL path segments cause too many false hits.
+_MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)")
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+
+def strip_code_fences(text: str) -> str:
+    """Remove fenced code blocks so example snippets don't look like content."""
+    return _FENCE_RE.sub("", text)
 
 
 def find_local_links(body: str) -> list[str]:
-    """Return local (non-URL, non-anchor) link targets referenced in body."""
-    targets: list[str] = []
-    for m in _MD_LINK_RE.finditer(body):
-        targets.append(m.group(1).strip())
-    for m in _BARE_REF_RE.finditer(body):
-        targets.append(m.group(1).strip())
+    """Return local, relative link targets referenced in markdown body.
+
+    Skips URLs, anchors, mailto, and absolute paths (which can't be resolved
+    relative to the skill directory and are usually doc cross-references).
+    """
     out: list[str] = []
     seen: set[str] = set()
-    for t in targets:
-        if t.startswith(("http://", "https://", "#", "mailto:")):
+    for m in _MD_LINK_RE.finditer(body):
+        t = m.group(1).strip()
+        if not t or "://" in t:
+            continue
+        if t.startswith(("http", "#", "mailto:", "/")):
             continue
         t = t.split("#", 1)[0].strip()
         if t and t not in seen:

@@ -148,9 +148,16 @@ def render_findings(findings: list[Finding], min_sev: str = "info",
                     color: bool = True) -> str:
     c = _color(color)
     threshold = SEVERITY_RANK[min_sev]
-    shown = [f for f in findings if SEVERITY_RANK[f.severity] <= threshold]
+    # Suppress info-level noise on read-only installed skills — you can't fix them,
+    # and they'd bury the findings that matter. They still count toward the score.
+    shown = [f for f in findings
+             if SEVERITY_RANK[f.severity] <= threshold
+             and not (f.origin == "library" and f.severity == "info")]
+    hidden = sum(1 for f in findings
+                 if f.origin == "library" and f.severity == "info")
     if not shown:
-        return f"  {c['good']}No findings at or above '{min_sev}'.{c['reset']}"
+        extra = (f" ({hidden} info-level library notes hidden)" if hidden else "")
+        return f"  {c['good']}No findings at or above '{min_sev}'.{c['reset']}{extra}"
     # group by artifact
     by_art: dict[str, list[Finding]] = {}
     for f in shown:
@@ -167,6 +174,9 @@ def render_findings(findings: list[Finding], min_sev: str = "info",
             fixtag = f" {c['good']}[fixable]{c['reset']}" if f.autofixable else ""
             lines.append(f"    {col}{mark} {f.rule_id}{c['reset']} {f.message} "
                          f"{c['dim']}{f.guide_ref}{c['reset']}{fixtag}")
+    if hidden:
+        lines.append(f"\n  {c['dim']}({hidden} info-level library notes hidden — "
+                     f"see --json for the full list){c['reset']}")
     return "\n".join(lines)
 
 
