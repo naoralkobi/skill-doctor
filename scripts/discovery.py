@@ -14,6 +14,14 @@ from typing import Iterable, Literal
 
 Kind = Literal["skill", "agent", "claudemd", "settings"]
 
+# Always-ignored paths: a tool's own test fixtures and backup dirs are never real
+# skills, even when the tool is installed inside ~/.claude/skills.
+DEFAULT_IGNORE = [
+    "*/tests/fixtures/*",
+    "*/.skill-doctor.bak/*",
+    "*/__pycache__/*",
+]
+
 
 @dataclass
 class Artifact:
@@ -156,11 +164,21 @@ def discover(scope: str = "all", extra_paths: Iterable[Path] = (),
             arts.append(Artifact("settings", path, origin, editable=False,
                                  label=str(path.name)))
 
-    patterns = list(ignore)
-    if patterns:
-        roots = [Path.cwd(), home] + [Path(p) for p in extra_paths]
-        arts = [a for a in arts if not _ignored(a.path, patterns, roots)]
-    return arts
+    patterns = DEFAULT_IGNORE + list(ignore)
+    roots = [Path.cwd(), home] + [Path(p) for p in extra_paths]
+    arts = [a for a in arts if not _ignored(a.path, patterns, roots)]
+
+    # Dedupe by resolved path: user and project scopes can resolve to the same
+    # file (e.g. when the working directory is the home dir).
+    deduped: list[Artifact] = []
+    seen_paths: set[Path] = set()
+    for a in arts:
+        rp = a.path.resolve()
+        if rp in seen_paths:
+            continue
+        seen_paths.add(rp)
+        deduped.append(a)
+    return deduped
 
 
 def _find_skill_mds(root: Path) -> list[Path]:

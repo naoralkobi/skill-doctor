@@ -1,7 +1,7 @@
 ---
 name: skill-doctor
 description: Audits and optimizes a Claude Code setup — skills, CLAUDE.md, subagents, permissions, and hooks — against best practices, and scores its health. Use when reviewing, linting, auditing, or improving local skills, or before publishing a skill.
-version: 0.2.0
+version: 0.2.1
 metadata:
   author: naoralkobi
   homepage: https://github.com/naoralkobi/skill-doctor

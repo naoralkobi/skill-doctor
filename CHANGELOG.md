@@ -3,6 +3,13 @@
 All notable changes to skill-doctor are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com); versioning is SemVer.
 
+## [0.2.1] — 2026-06-13
+### Fixed
+- When installed into `~/.claude/skills`, the tool no longer audits its own
+  bundled `tests/fixtures` as if they were real skills (default ignore globs).
+- Dedupe discovered artifacts by resolved path, so settings/CLAUDE.md/agents
+  aren't double-reported when user and project scopes resolve to the same file.
+
 ## [0.2.0] — 2026-06-13
 ### Changed
 - Skill-only: removed the standalone-CLI install/usage/positioning. The bundled
