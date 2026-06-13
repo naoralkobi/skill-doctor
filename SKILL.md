@@ -1,7 +1,7 @@
 ---
 name: skill-doctor
 description: Audits and optimizes a Claude Code setup — skills, CLAUDE.md, subagents, permissions, and hooks — against best practices, and scores its health. Use when reviewing, linting, auditing, or improving local skills, or before publishing a skill.
-version: 0.1.1
+version: 0.2.0
 metadata:
   author: naoralkobi
   homepage: https://github.com/naoralkobi/skill-doctor
@@ -9,20 +9,24 @@ metadata:
 
 # skill-doctor
 
-Audit a Claude Code setup against the Skill Maintainer's Codex, get a health
-score, and apply safe auto-fixes. Read-only by default.
+Audit a Claude Code setup against the Skill Maintainer's Codex, give it a health
+score, and apply safe auto-fixes. Runs inside a Claude session; read-only by
+default. When invoked, run the bundled engine from this skill's directory and
+present the findings, scorecard, and biggest wins to the user.
 
 ## Quick start
+
+Run the engine (bundled in `scripts/`) and report the scorecard:
 
 ```bash
 python scripts/skill_doctor.py scan          # audit everything + scorecard
 ```
 
-Scope it, or score only:
+Scope it, or show only the score:
 
 ```bash
 python scripts/skill_doctor.py scan --scope user --score-only
-python scripts/skill_doctor.py scan --skip-installed     # only your own skills
+python scripts/skill_doctor.py scan --skip-installed     # only the user's own skills
 ```
 
 ## Workflow

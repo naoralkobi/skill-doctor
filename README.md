@@ -7,8 +7,9 @@ add hooks, and grant permissions — with no way to know what has drifted from g
 practice. `skill-doctor` scans all of it, reports findings mapped to a documented
 guide, gives your setup a **health score**, and applies safe auto-fixes.
 
-It is both a **standalone CLI** and a **Claude skill** (`/skill-doctor`). It is
-read-only by default and never touches installed/third-party skills.
+It runs entirely **inside a Claude Code session**: invoke **`/skill-doctor`** (or
+just ask Claude to audit your skills) and Claude runs the bundled engine for you.
+It is read-only by default and never touches installed/third-party skills.
 
 > 📖 **Read the guide:** [The Skill Maintainer's Codex](https://naoralkobi.github.io/skill-doctor/)
 > — the 27-practice reference this tool enforces (and scores **A** against itself).
@@ -30,61 +31,43 @@ read-only by default and never touches installed/third-party skills.
 
 ## Install
 
-Requires **Python 3.11+** (uses stdlib `tomllib`). No packages to install.
+`skill-doctor` is a Claude Code skill. Put it where Claude discovers skills:
 
 ```bash
 git clone https://github.com/naoralkobi/skill-doctor.git
-cd skill-doctor
-python3 scripts/skill_doctor.py scan
+ln -s "$PWD/skill-doctor" ~/.claude/skills/skill-doctor
 ```
 
-Optional — a short alias:
-
-```bash
-alias skill-doctor='python3 ~/skill-doctor/scripts/skill_doctor.py'
-```
-
-### Use it as a Claude skill
-
-Symlink the project into your skills directory so Claude can run it in-session as
-`/skill-doctor`:
-
-```bash
-ln -s ~/skill-doctor ~/.claude/skills/skill-doctor
-```
-
-(Symlinking keeps the repo as the single source of truth — Codex Practice 18.)
+Then restart Claude Code (or run `/reload-plugins`). The bundled engine needs
+**Python 3.11+** (stdlib only — nothing to `pip install`). Symlinking keeps the
+repo as the single source of truth — Codex Practice 18.
 
 ---
 
-## Usage
+## Using it in a session
 
-```bash
-skill-doctor scan      # audit + scorecard (default; writes nothing)
-skill-doctor fix       # apply safe auto-fixes to your artifacts
-skill-doctor rules     # print the rule catalog
-```
-
-### `scan`
-
-```bash
-skill-doctor scan                       # everything, all scopes
-skill-doctor scan --scope user          # only ~/.claude
-skill-doctor scan --skip-installed      # ignore third-party skills
-skill-doctor scan --score-only          # just the scorecard
-skill-doctor scan --json                # machine-readable
-skill-doctor scan --conventions         # also check opt-in MT* conventions
-skill-doctor scan --min-score 80        # exit nonzero if score < 80 (CI gate)
-skill-doctor scan --only SK002,SK007    # run specific rules
-skill-doctor scan --disable SK011       # skip specific rules
-skill-doctor scan --severity warn       # hide info-level findings
-```
-
-Example output:
+Invoke the skill and let Claude drive it:
 
 ```
-  scanned 9 artifact(s) · scope=all
+/skill-doctor
+```
 
+Or just ask in natural language — *"audit my skills"*, *"score my Claude setup"*,
+*"fix the easy issues"* — and Claude triggers the skill from its description.
+
+Claude runs the bundled engine and walks you through the results:
+
+1. **Audit + score** — scans your setup and shows the findings + Setup Health scorecard.
+2. **Biggest wins** — an ordered list of what costs the most points.
+3. **Preview fixes** — a diff of the safe auto-fixes, before anything is written.
+4. **Apply** — on your go-ahead, applies them (backups kept) and re-scores.
+
+You can scope the request — *"only my own skills"*, *"just the score"*, *"check
+the DogWalker project"* — and Claude passes the right options through.
+
+Example of what Claude shows you:
+
+```
   my-skill
     ✗ SK002 Missing `description` in frontmatter. Part I·03
     ▲ SK006 SKILL.md body is 642 lines (keep <500). Part I·01
@@ -100,26 +83,9 @@ Example output:
   Installed library health: 64 / 100 (D) — 12 bloated description(s)
 ```
 
-### `fix`
-
-```bash
-skill-doctor fix --dry-run    # preview a unified diff, write nothing
-skill-doctor fix              # apply (backups in ./.skill-doctor.bak/)
-```
-
 Auto-fixable rules: `SK010` (Windows → forward-slash paths) and `SK012`
 (trailing whitespace / final newline). Everything else is reported with a
 suggestion for you to decide.
-
-### Exit codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | clean (no warnings or errors) |
-| 1 | warnings present |
-| 2 | errors present, or score below `--min-score` |
-
-Use `--min-score` in CI to fail a PR when a skill regresses.
 
 ---
 
@@ -188,8 +154,8 @@ skill-doctor/
 ├── README.md
 ├── CHANGELOG.md
 ├── .skill-doctor.toml      # default config
-├── scripts/                # the engine (stdlib only)
-│   ├── skill_doctor.py     # CLI: scan | fix | rules
+├── scripts/                # the engine the skill runs (stdlib only)
+│   ├── skill_doctor.py     # engine entry point (scan / fix / rules)
 │   ├── discovery.py        # artifact discovery
 │   ├── parse.py            # frontmatter / json / toml / links
 │   ├── rules.py            # rule registry
@@ -201,6 +167,8 @@ skill-doctor/
 ```
 
 ## Development
+
+For contributors working on the engine (end users never run these — Claude does):
 
 ```bash
 python3 -m pytest tests/        # run the eval suite

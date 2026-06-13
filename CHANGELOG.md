@@ -3,6 +3,12 @@
 All notable changes to skill-doctor are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com); versioning is SemVer.
 
+## [0.2.0] — 2026-06-13
+### Changed
+- Skill-only: removed the standalone-CLI install/usage/positioning. The bundled
+  Python engine is now run by the `/skill-doctor` skill inside a Claude session,
+  not installed or invoked by hand. README and SKILL.md reframed accordingly.
+
 ## [0.1.1] — 2026-06-12
 ### Fixed
 - Dedupe installed skills that appear in both `plugins/cache` and

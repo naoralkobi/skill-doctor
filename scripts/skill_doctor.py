@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""skill-doctor — audit & optimize a Claude Code setup against the Codex.
+"""skill-doctor engine — invoked by the /skill-doctor Claude skill.
 
-Stdlib only. Three commands:
+This is the internal engine the skill runs inside a Claude Code session; it is
+not a standalone CLI you install or run by hand. Stdlib only. Subcommands:
 
-  skill-doctor scan      audit + scorecard (DEFAULT; writes nothing)
-  skill-doctor fix       apply safe auto-fixes to authored artifacts
-  skill-doctor rules     print the rule catalog
+  scan      audit + scorecard (writes nothing)
+  fix       apply safe auto-fixes to authored artifacts
+  rules     print the rule catalog
 
-Run `skill-doctor <command> --help` for options. Exit codes from `scan`:
-0 = clean, 1 = warnings, 2 = errors (CI-friendly; see also --min-score).
+Claude drives these on your behalf when you invoke /skill-doctor. Exit codes
+from `scan`: 0 = clean, 1 = warnings, 2 = errors.
 """
 from __future__ import annotations
 
